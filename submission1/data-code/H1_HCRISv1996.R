@@ -38,6 +38,7 @@ colnames(hcris.vars)=c("variable","WKSHT_CD","LINE_NUM","CLMN_NUM","source")
 ## -- note: v1996 of HCRIS forms run through 2011 due to lags in processing and hospital
 ##    fiscal years
 ########################################################################################
+# update this for years change 1998
 for (i in 1998:2011) {
   HCRIS.alpha=read_csv(paste0("data/input/HCRIS_v1996/HospitalFY",i,"/hosp_",i,"_ALPHA.CSV"),
                        col_names=c('RPT_REC_NUM','WKSHT_CD','LINE_NUM','CLMN_NUM','ITM_VAL_NUM'))
@@ -72,6 +73,6 @@ for (i in 1998:2011) {
   } else {
     final.hcris.v1996=rbind(final.hcris.v1996,get(paste("final.reports.",i,sep="")))
   }
-  
+  #change for years 
 }
 write_rds(final.hcris.v1996,'data/output/HCRIS_Data_v1996.rds')
