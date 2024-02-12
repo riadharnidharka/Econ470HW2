@@ -56,7 +56,7 @@ unique.hcris1 =
   mutate(source='unique reports')
 
 
-## identify hospitals with multiple reports per fiscal year
+## identify hospitals with multiple reports per fiscal year (answer to q1?)
 duplicate.hcris = 
   final.hcris %>%
   filter(total_reports>1) %>%
