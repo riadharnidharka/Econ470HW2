@@ -69,7 +69,7 @@ for (i in 2008:2011) {
   }
   assign(paste("final.reports.",i,sep=""),final.reports)
   if (i==2008) {
-    final.hcris.v1996=final.reports.1998
+    final.hcris.v1996=final.reports.2008
   } else {
     final.hcris.v1996=rbind(final.hcris.v1996,get(paste("final.reports.",i,sep="")))
   }
