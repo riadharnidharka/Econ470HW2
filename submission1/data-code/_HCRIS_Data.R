@@ -62,6 +62,21 @@ duplicate.hcris =
   filter(total_reports>1) %>%
   mutate(time_diff=fy_end-fy_start)
 
+## ria's edits: Aggregate data to count unique provider numbers per year
+unique_provider_counts <- duplicate.hcris %>%
+  group_by(fyear) %>%
+  summarise(UniqueProviders = n_distinct(provider_number))
+
+## ria's edits: line graph of number of hospitals w more than one report over time
+dup.hospitals <- ggplot(unique_provider_counts, aes(x = fyear, y = UniqueProviders)) +
+  geom_line() +
+  labs(title = "Hospitals with Duplicate Reports Over Time",
+       x = "fiscal year",
+       y = "Number of Hospitals") +
+  theme_minimal()
+
+ggsave("dup.hospitals.png", plot = dup.hospitals)
+
 ## calculate elapsed time between fy start and fy end for hospitals with multiple reports
 duplicate.hcris = 
   duplicate.hcris %>% 
