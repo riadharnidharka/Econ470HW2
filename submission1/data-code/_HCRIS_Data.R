@@ -67,7 +67,7 @@ unique_provider_counts <- duplicate.hcris %>%
   group_by(fyear) %>%
   summarise(UniqueProviders = n_distinct(provider_number))
 
-## ria's edits: line graph of number of hospitals w more than one report over time
+## ria's edits (stopped here): line graph of number of hospitals w more than one report over time
 dup.hospitals <- ggplot(unique_provider_counts, aes(x = fyear, y = UniqueProviders)) +
   geom_line() +
   labs(title = "Hospitals with Duplicate Reports Over Time",
