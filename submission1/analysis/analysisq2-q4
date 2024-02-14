@@ -1,0 +1,52 @@
+#Question 2: How many unique ids after removing/combining reports
+final.hcris.data
+
+## Calculate the number of unique hospital IDs
+library(dplyr)
+num_unique_hospital_ids <- final.hcris.data %>%
+  distinct(provider_number) %>%
+  nrow()
+
+# Print the result
+print(num_unique_hospital_ids)
+### There are 48803 unique hospital ids in the dataset 
+
+#Question 3
+## Create the violin plot
+library(ggplot2)
+library(scales)
+# Define the custom upper limit for the y-axis
+custom_upper_limit <- 3000000000 
+tot.charges <- ggplot(final.hcris.data, aes(x = year, y = tot_charges)) +
+  geom_violin() +
+  labs(title = "Distribution of Total Charges by Year",
+       x = "Year",
+       y = "Total Charges") +
+  theme_minimal() + 
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE), limits = c(0, custom_upper_limit))
+ggsave("totalcharges.png", plot = tot.charges)
+
+#Question 4
+# Calculate estimated price using the provided formula
+final.hcris.data <- final.hcris.data %>%
+  mutate(
+    discount_factor = 1 - tot_discounts / tot_charges,
+    price_num = (ip_charges + icu_charges + ancillary_charges) * discount_factor - tot_mcare_payment,
+    price_denom = tot_discharges - mcare_discharges,
+    price = price_num / price_denom
+  )
+
+# Filter out negative prices and potential outliers
+final.hcris.data <- final.hcris.data %>%
+  filter(price >= 0)  # Filter out negative prices
+
+# Create the violin plot
+custom_upper_limit <- 65000
+est.prices <- ggplot(final.hcris.data, aes(x = year, y = price)) +
+  geom_violin(trim = TRUE) +  # Adjust the `trim` parameter as needed
+  labs(title = "Distribution of Estimated Prices by Year",
+       x = "Year",
+       y = "Estimated Price") +
+  theme_minimal() +
+  ylim(0, custom_upper_limit)  # Set custom upper limit for y-axis
+ggsave("estimatedprices.png", plot = est.prices)

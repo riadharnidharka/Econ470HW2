@@ -68,3 +68,4 @@ dup.hospitals <- ggplot(unique_provider_counts, aes(x = fyear, y = UniqueProvide
        x = "fiscal year",
        y = "Number of Hospitals") +
   theme_minimal()
+   
