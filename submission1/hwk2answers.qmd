@@ -30,3 +30,30 @@ load("Hwk2_workspace1.Rdata")
 
 \vspace{.2in}
 \noindent 1. How many hospitals filed more than one report in the same year? Show your answer as a line graph of the number of hospitals over time.<br>
+
+```{r}
+#| echo: false
+#| label: dup.hospitals
+#| fig-cap: "Hospitals with Duplicates "
+
+dup.hospitals
+```
+\newpage
+
+\vspace{.2in}
+\noindent 2. After removing/combining multiple reports, how many unique hospital IDs (Medicare provider numbers) exist in the data?
+
+There are 48803 unique hospital ids in the dataset 
+
+\newpage
+\noindent 3. What is the distribution of total charges (tot_charges in the data) in each year? Show your results with a “violin” plot, with charges on the y-axis and years on the x-axis. For a nice tutorial on violin plots, look at Violin Plots with ggplot2.
+
+
+```{r}
+#| echo: false
+#| label: totalcharges
+#| fig-cap: "Distribution of Total Charges"
+
+tot.charges
+```
+\newpage
