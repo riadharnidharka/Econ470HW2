@@ -45,15 +45,33 @@ dup.hospitals
 
 There are 48803 unique hospital ids in the dataset 
 
+```{r}
+#| include: false
+#| eval: true
+
+ 
+load("Hwk2_workspace1.Rdata")
+```
+\newpage
+
 \newpage
 \noindent 3. What is the distribution of total charges (tot_charges in the data) in each year? Show your results with a “violin” plot, with charges on the y-axis and years on the x-axis. For a nice tutorial on violin plots, look at Violin Plots with ggplot2.
-
-
 ```{r}
 #| echo: false
-#| label: totalcharges
-#| fig-cap: "Distribution of Total Charges"
+#| label: tot.charges
+#| fig-cap: "Total Charges"
 
 tot.charges
+```
+\newpage
+
+\newpage
+\noindent 4. What is the distribution of estimated prices in each year? Again present your results with a violin plot, and recall our formula for estimating prices from class. Be sure to do something about outliers and/or negative prices in the data.
+```{r}
+#| echo: false
+#| label: est.prices
+#| fig-cap: "Estimated Prices"
+
+est.prices
 ```
 \newpage
