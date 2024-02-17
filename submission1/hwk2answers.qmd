@@ -75,3 +75,11 @@ tot.charges
 est.prices
 ```
 \newpage
+
+\noindent 5. Calculate the average price among penalized versus non-penalized hospitals.
+
+The average price among non-penalized hospitals is $9560.41, while the average price among penalized hospitals is $9896.31. 
+
+\newpage
+\noindent 6. Split hospitals into quartiles based on bed size. To do this, create 4 new indicator variables, where each variable is set to 1 if the hospital’s bed size falls into the relevant quartile. Provide a table of the average price among treated/control groups for each quartile.
+
