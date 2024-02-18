@@ -10,6 +10,10 @@ format:
       - \usepackage{float}
       - \floatplacement{table}{H}
 ---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE)
+```
+
 ```{r}
 #| include: false
 
@@ -80,6 +84,51 @@ est.prices
 
 The average price among non-penalized hospitals is $9560.41, while the average price among penalized hospitals is $9896.31. 
 
+```{r}
+#| include: false
+#| eval: true
+
+ 
+load("Hwk2_workspace2.Rdata")
+```
+\newpage
+
 \newpage
 \noindent 6. Split hospitals into quartiles based on bed size. To do this, create 4 new indicator variables, where each variable is set to 1 if the hospital’s bed size falls into the relevant quartile. Provide a table of the average price among treated/control groups for each quartile.
 
+```{r} 
+#| echo: false
+#| label: avg prices
+#| tbl-cap: "Quartile Price Summary"
+
+options(knitr.kable.NA = 0)
+knitr::kable(quartile_price_summary, 
+             col.names=c("Quartile","Treated Avg Price","Non-Treated Avg Price"),
+             format.args=list(big.mark=","), booktabs = TRUE) %>%
+             kable_styling(latex_options=c("scale_down"))
+```
+
+\newpage
+\noindent 7. Find the average treatment effect using each of the following estimators, and present your results in a single table:
+
+- Nearest neighbor matching (1-to-1) with inverse variance distance based on quartiles of bed size
+- Nearest neighbor matching (1-to-1) with Mahalanobis distance based on quartiles of bed size
+- Inverse propensity weighting, where the propensity scores are based on quartiles of bed size
+- Simple linear regression, adjusting for quartiles of bed size using dummy variables and appropriate interactions as discussed in class
+
+idk
+
+\newpage
+\noindent 8. With these different treatment effect estimators, are the results similar, identical, very different?
+
+idk
+
+\newpage
+\noindent 9. Do you think you’ve estimated a causal effect of the penalty? Why or why not? (just a couple of sentences)
+
+idk
+
+\newpage
+\noindent 10. Briefly describe your experience working with these data (just a few sentences). Tell me one thing you learned and one thing that really aggravated or surprised you.
+
+My experience working with the data this time around was much better, and I felt a lot more comfortable every step of the way. One thing I learned is how to do the analysis of the data without looking at the exact code, and instead using the slides and chatgbt to guide me in creating my own code. One thing that aggravated me is not knowing how to manipulate standard lines of code to incorprate our data, such as in question 7. 
