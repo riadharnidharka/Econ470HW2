@@ -1,15 +1,16 @@
+#Question 1: code in HCRIS_Data.R code file
 #Question 2: How many unique ids after removing/combining reports
 final.hcris.data
+final.hcris.data=read_rds('data/output/HCRIS_Data.rds')
 
 ## Calculate the number of unique hospital IDs
 library(dplyr)
-num_unique_hospital_ids <- final.hcris.data %>%
-  distinct(provider_number) %>%
+num_unique_hospital_ids <- final.hcris.data  %>%  distinct(provider_number) %>%
   nrow()
 
 # Print the result
 print(num_unique_hospital_ids)
-### There are 48803 unique hospital ids in the dataset 
+### There are 6747 unique hospital ids in the dataset 
 
 #Question 3
 ## Create the violin plot
