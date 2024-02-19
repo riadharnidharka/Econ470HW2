@@ -47,7 +47,7 @@ dup.hospitals
 \vspace{.2in}
 \noindent 2. After removing/combining multiple reports, how many unique hospital IDs (Medicare provider numbers) exist in the data?
 
-There are 48803 unique hospital ids in the dataset 
+There are 6747 unique hospital ids in the dataset (for years 2008-2015).
 
 ```{r}
 #| include: false
@@ -117,30 +117,6 @@ knitr::kable(quartile_price_summary,
 - Simple linear regression, adjusting for quartiles of bed size using dummy variables and appropriate interactions as discussed in class
 
 I attempted this question using the following code, but could not figure out what to replace these variables with in order to use our data. For example, I could not figure out what to put in for the treatment and outcomes. I will continue working on this question for the second submission. 
-
-#Perform nearest neighbor matching
-match_iv <- matchit(treatment ~ beds, data = your_data_frame, method = "nearest", distance = "genetic")
-
-#Calculate Mahalanobis distance matrix
-mah_dist <- mahalanobis(your_data_frame[, c("bed_size_variable", "other_covariates")])
-
-#Perform nearest neighbor matching (1-to-1) with Mahalanobis distance 
-match_mah <- Match(your_data_frame$treatment, your_data_frame$bed_size_variable, Mahalanobis = TRUE)
-
-#Calculate inverse propensity scores 
-model_ps <- glm(treatment ~ bed_size_variable, data = your_data_frame, family = binomial)
-propensity_scores <- predict(model_ps, type = "response")
-
-#Perform inverse propensity weighting
-weighted_data <- your_data_frame
-weighted_data$weights <- ifelse(weighted_data$treatment == 1, 1 / propensity_scores, 1 / (1 - propensity_scores))
-
-#Perform simple linear regression 
-model_lm <- lm(outcome ~ factor(bed_size_variable) + factor(treatment) + factor(bed_size_variable) * factor(treatment), data = your_data_frame)
-summary(model_lm)
-
-#Obtain robust standard errors for the regression coefficients
-coeftest(model_lm, vcov = sandwich)
 
 
 \newpage

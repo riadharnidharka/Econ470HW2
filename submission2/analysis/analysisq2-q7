@@ -97,36 +97,29 @@ quartile_price_summary <- final.hcris %>%
 
 print(quartile_price_summary)
 
-# Question 7: do exact matching on a subset Load required libraries
-library(MatchIt)  # For matching methods
-library(Matching) # For matching methods
-library(lmtest)   # For linear regression
-library(sandwich) # For robust standard errors
+# Question 7: do exact matching on a subset 
+#nearest neighbor inverse variance
+lp.vars <- final.hcris %>% ungroup() %>% 
+  select(beds, mcaid_discharges, penalty, ip_charges, 
+         mcare_discharges, tot_mcare_payment, price)
 
-# Perform nearest neighbor matching (1-to-1) with inverse variance distance based on quartiles of bed size
-# Replace 'outcome' and 'treatment' with your actual outcome and treatment variables
-match_iv <- matchit(treatment ~ beds, data = your_data_frame, method = "nearest", distance = "genetic")
+lp.covs2 <- final.hcris %>% ungroup() %>% 
+  select(quartile)
 
-# Calculate Mahalanobis distance matrix
-mah_dist <- mahalanobis(your_data_frame[, c("bed_size_variable", "other_covariates")])
 
-# Perform nearest neighbor matching (1-to-1) with Mahalanobis distance based on quartiles of bed size
-match_mah <- Match(your_data_frame$treatment, your_data_frame$bed_size_variable, Mahalanobis = TRUE)
+m.nn.var2 <- Matching::Match(Y=lp.vars$price,
+                             Tr=lp.vars$penalty,
+                             X=lp.covs2,
+                             M=1,   #<<
+                             Weight=1,
+                             estimand="ATE")
+                            
+                        
+# Extract the ATE value from the matching result
+ate_nn_var2 <- m.nn.var2$estimates$ate
 
-# Calculate inverse propensity scores based on quartiles of bed size
-model_ps <- glm(treatment ~ bed_size_variable, data = your_data_frame, family = binomial)
-propensity_scores <- predict(model_ps, type = "response")
-
-# Perform inverse propensity weighting
-weighted_data <- your_data_frame
-weighted_data$weights <- ifelse(weighted_data$treatment == 1, 1 / propensity_scores, 1 / (1 - propensity_scores))
-
-# Perform simple linear regression adjusting for quartiles of bed size using dummy variables and interactions
-model_lm <- lm(outcome ~ factor(bed_size_variable) + factor(treatment) + factor(bed_size_variable) * factor(treatment), data = your_data_frame)
-summary(model_lm)
-
-# Obtain robust standard errors for the regression coefficients
-coeftest(model_lm, vcov = sandwich)
+# Print the ATE
+cat("Average Treatment Effect (ATE) using Nearest Neighbor Matching with inverse variance:", ate_nn_var2, "\n")
 
 
 save.image("submission1/Hwk2_workspace2.Rdata")  
