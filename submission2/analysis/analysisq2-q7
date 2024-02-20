@@ -1,4 +1,4 @@
-#Question 1: code in HCRIS_Data.R code file
+#Question 1: code in HCRIS_Data.R code file (and analysisq1)
 #Question 2: How many unique ids after removing/combining reports
 final.hcris.data
 final.hcris.data=read_rds('data/output/HCRIS_Data.rds')
@@ -97,29 +97,70 @@ quartile_price_summary <- final.hcris %>%
 
 print(quartile_price_summary)
 
-# Question 7: do exact matching on a subset 
-#nearest neighbor inverse variance
-lp.vars <- final.hcris %>% ungroup() %>% 
-  select(beds, mcaid_discharges, penalty, ip_charges, 
-         mcare_discharges, tot_mcare_payment, price)
-
-lp.covs2 <- final.hcris %>% ungroup() %>% 
-  select(quartile)
+#Question 7:
+lp.vars <- final.hcris %>% 
+  dplyr::select(beds, quartile_1, quartile_2, penalty, quartile_3, 
+         quartile_4, price) %>%
+  dplyr::filter(complete.cases(.))
+lp.covs <- lp.vars %>% dplyr::select(-c("penalty","price"))
 
 
+v.name=data.frame(new=c("Beds","Quartile 1", "Penalty", "Quartile 2",
+                   "Quartile 3", "Quartile 4", "Price"))
+
+# Part 1: Nearest Neighbor Matching (Inverse Variance Distance)
 m.nn.var2 <- Matching::Match(Y=lp.vars$price,
                              Tr=lp.vars$penalty,
-                             X=lp.covs2,
+                             X=lp.covs,
                              M=1,   #<<
                              Weight=1,
                              estimand="ATE")
-                            
-                        
-# Extract the ATE value from the matching result
-ate_nn_var2 <- m.nn.var2$estimates$ate
+                             
 
-# Print the ATE
-cat("Average Treatment Effect (ATE) using Nearest Neighbor Matching with inverse variance:", ate_nn_var2, "\n")
+#Part 2: Nearest neighbor matching (1-to-1) with Mahalanobis distance
+m.nn.md <- Matching::Match(Y=lp.vars$price,
+                           Tr=lp.vars$penalty,
+                           X=lp.covs,
+                           M=1,
+                           Weight=2,
+                           estimand="ATE")                           
 
 
-save.image("submission1/Hwk2_workspace2.Rdata")  
+#Part 3: Inverse propensity weighting
+logit.model <- glm(penalty ~ beds + quartile_1 + quartile_2 + quartile_3 + 
+         quartile_4 + price, family=binomial, data=lp.vars)
+ps <- fitted(logit.model)
+m.nn.ps <- Matching::Match(Y=lp.vars$price,
+                           Tr=lp.vars$penalty,
+                           X=ps,
+                           M=1,
+                           estimand="ATE")
+
+
+#Part 4: Simple linear regression 
+reg.dat <- lp.vars %>% ungroup() %>% filter(complete.cases(.)) %>%
+  mutate(beds_diff = penalty*(beds - mean(beds)))
+reg <- lm(price ~ penalty + beds + quartile_1 + quartile_2 + quartile_3 + quartile_4 + 
+            beds_diff,
+          data=reg.dat)
+summary(reg)
+
+library(cobalt)
+# Extract ATE estimates
+ATE_nn_var <- bal.tab(m.nn.var2, covs = lp.covs, treat = lp.vars$penalty)$ATE
+ATE_nn_md <- bal.tab(m.nn.md, covs = lp.covs, treat = lp.vars$penalty)$ATE
+ATE_nn_ps <- bal.tab(m.nn.ps, covs = lp.covs, treat = lp.vars$penalty)$ATE
+ATE_reg <- coef(summary(reg))["penaltyTRUE", "Estimate"]
+
+# Create a data frame for the results
+results_table <- data.frame(
+  Estimator = c("Nearest Neighbor (Inverse Variance Distance)", 
+                "Nearest Neighbor (Mahalanobis Distance)", 
+                "Inverse Propensity Weighting", 
+                "Simple Linear Regression"),
+  ATE = c(ATE_nn_var, ATE_nn_md, ATE_nn_ps, ATE_reg)
+)
+# Print the results table
+print(results_table)
+
+save.image("submission2/Hwk2_workspace2.Rdata")  

@@ -107,8 +107,15 @@ knitr::kable(quartile_price_summary,
              format.args=list(big.mark=","), booktabs = TRUE) %>%
              kable_styling(latex_options=c("scale_down"))
 ```
+```{r}
+#| include: false
+#| eval: true
 
+ 
+load("Hwk2_workspace2.Rdata")
+```
 \newpage
+
 \noindent 7. Find the average treatment effect using each of the following estimators, and present your results in a single table:
 
 - Nearest neighbor matching (1-to-1) with inverse variance distance based on quartiles of bed size
@@ -116,20 +123,31 @@ knitr::kable(quartile_price_summary,
 - Inverse propensity weighting, where the propensity scores are based on quartiles of bed size
 - Simple linear regression, adjusting for quartiles of bed size using dummy variables and appropriate interactions as discussed in class
 
-I attempted this question using the following code, but could not figure out what to replace these variables with in order to use our data. For example, I could not figure out what to put in for the treatment and outcomes. I will continue working on this question for the second submission. 
+
+```{r} 
+#| echo: false
+#| label: avg treatment effect
+#| tbl-cap: "Average Treatment Effectd"
+
+options(knitr.kable.NA = 0)
+knitr::kable(results_table, 
+             col.names=c("Estimator","ATE"),
+             format.args=list(big.mark=","), booktabs = TRUE) %>%
+             kable_styling(latex_options=c("scale_down"))
+```
 
 
 \newpage
 \noindent 8. With these different treatment effect estimators, are the results similar, identical, very different?
 
-I won't be able to fully answer this question until I have figured out question 8, but I would imagine that the results would be similar with the different treatment effects. I would guess this because using slightly different methods would mean there could not be identical results, but estimates should not be so different because they are al aiming to estimate the same thing. 
+With these different treatment effect estimators, the results ended up being identical. This may be because they rely on similar assumptions within the data. 
 
 \newpage
 \noindent 9. Do you think you’ve estimated a causal effect of the penalty? Why or why not? (just a couple of sentences)
 
-Once again I cannot fully answer the question until I have answered question 8 to see the results, but I would guess that we are estimating a causal effect of the penalty. I would guess this because when we use weighting in our matching, we are able to control more for different factors that would interfere with causality.
+I would guess that we are estimating a causal effect of the penalty because when we use weighting in our matching, we are able to control more for different factors that would interfere with causality.
 
 \newpage
 \noindent 10. Briefly describe your experience working with these data (just a few sentences). Tell me one thing you learned and one thing that really aggravated or surprised you.
 
-My experience working with the data this time around was much better, and I felt a lot more comfortable every step of the way. One thing I learned is how to do the analysis of the data without looking at the exact code, and instead using the slides and chatgbt to guide me in creating my own code. One thing that aggravated me is not knowing how to manipulate standard lines of code to incorprate our data, such as in question 7. 
+My experience working with the data this time around was much better, and I felt a lot more comfortable every step of the way. One thing I learned is how to do the analysis of the data without looking at the exact code, and instead using the slides and chatgbt to guide me in creating my own code. One thing that aggravated me is not knowing if my answers are reasonable or not, and if they are not, then how to fix them. 
