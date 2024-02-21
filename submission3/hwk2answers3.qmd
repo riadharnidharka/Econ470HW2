@@ -1,0 +1,138 @@
+---
+title: "Homework 2"
+subtitle: "Research in Health Economics, Spring 2024 https://github.com/riadharnidharka/Econ470hw2"
+author: "Ria Dharnidharka"
+format:
+  pdf:
+    output-file: "dharnidharka-r-hwk2-3"
+    output-ext:  "pdf"
+    header-includes:
+      - \usepackage{float}
+      - \floatplacement{table}{H}
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+```{r}
+#| include: false
+
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, readr, readxl, hrbrthemes, fixest,
+               scales, gganimate, gapminder, gifski, png, tufte, plotly, OECD,
+               ggrepel, survey, foreign, devtools, pdftools, kableExtra, modelsummary,
+               kableExtra)
+```
+```{r}
+#| include: false
+#| eval: true
+
+ 
+load("Hwk2_workspace1.Rdata")
+```
+\newpage
+
+\vspace{.2in}
+\noindent 1. How many hospitals filed more than one report in the same year? Show your answer as a line graph of the number of hospitals over time.<br>
+
+```{r}
+#| echo: false
+#| label: dup.hospitals
+#| fig-cap: "Hospitals with Duplicates "
+
+dup.hospitals
+```
+\newpage
+
+\vspace{.2in}
+\noindent 2. After removing/combining multiple reports, how many unique hospital IDs (Medicare provider numbers) exist in the data?
+
+There are 6747 unique hospital ids in the dataset (for years 2008-2015).
+
+```{r}
+#| include: false
+#| eval: true
+
+ 
+load("Hwk2_workspace2.Rdata")
+```
+\newpage
+
+\newpage
+\noindent 3. What is the distribution of total charges (tot_charges in the data) in each year? Show your results with a “violin” plot, with charges on the y-axis and years on the x-axis. For a nice tutorial on violin plots, look at Violin Plots with ggplot2.
+```{r}
+#| echo: false
+#| label: tot.charges
+#| fig-cap: "Total Charges"
+
+tot.charges
+```
+\newpage
+
+\newpage
+\noindent 4. What is the distribution of estimated prices in each year? Again present your results with a violin plot, and recall our formula for estimating prices from class. Be sure to do something about outliers and/or negative prices in the data.
+```{r}
+#| echo: false
+#| label: est.prices
+#| fig-cap: "Estimated Prices"
+
+estimated_prices
+```
+\newpage
+
+\noindent 5. Calculate the average price among penalized versus non-penalized hospitals.
+
+The average price among non-penalized hospitals is $9560.41, while the average price among penalized hospitals is $9896.31. 
+
+
+\newpage
+\noindent 6. Split hospitals into quartiles based on bed size. To do this, create 4 new indicator variables, where each variable is set to 1 if the hospital’s bed size falls into the relevant quartile. Provide a table of the average price among treated/control groups for each quartile.
+
+```{r} 
+#| echo: false
+#| label: avg prices
+#| tbl-cap: "Quartile Price Summary"
+
+options(knitr.kable.NA = 0)
+knitr::kable(quartile_price_summary, 
+             col.names=c("Quartile","Treated Avg Price","Non-Treated Avg Price"),
+             format.args=list(big.mark=","), booktabs = TRUE) %>%
+             kable_styling(latex_options=c("scale_down"))
+```
+
+\newpage
+\noindent 7. Find the average treatment effect using each of the following estimators, and present your results in a single table:
+
+- Nearest neighbor matching (1-to-1) with inverse variance distance based on quartiles of bed size
+- Nearest neighbor matching (1-to-1) with Mahalanobis distance based on quartiles of bed size
+- Inverse propensity weighting, where the propensity scores are based on quartiles of bed size
+- Simple linear regression, adjusting for quartiles of bed size using dummy variables and appropriate interactions as discussed in class
+
+
+```{r} 
+#| echo: false
+#| label: avg treatment effect
+#| tbl-cap: "Average Treatment Effects"
+
+options(knitr.kable.NA = 0)
+knitr::kable(results_table, 
+             col.names=c("Estimator","ATE"),
+             format.args=list(big.mark=","), booktabs = TRUE) %>%
+             kable_styling(latex_options=c("scale_down"))
+```
+
+
+\newpage
+\noindent 8. With these different treatment effect estimators, are the results similar, identical, very different?
+
+With these different treatment effect estimators, the results ended up being identical. This may be because they rely on similar assumptions within the data, all account for confounding, and they have similar treatment and control groups. 
+
+\newpage
+\noindent 9. Do you think you’ve estimated a causal effect of the penalty? Why or why not? (just a couple of sentences)
+
+I would guess that we are estimating a causal effect of the penalty because these estimators adjust for confounding variables and create balanced groups, which allows for an estimation of causality. Their purpose is to estimate causality, through minimizing bias and confounding. 
+
+\newpage
+\noindent 10. Briefly describe your experience working with these data (just a few sentences). Tell me one thing you learned and one thing that really aggravated or surprised you.
+
+My experience working with the data this time around was much better, and I felt a lot more comfortable every step of the way. One thing I learned is how to do the analysis of the data without looking at the exact code, and instead using the slides and chatgbt to guide me in creating my own code. One thing that aggravated me is not knowing if my answers were correct or not between submissions as everyone was in a different place, so it was hard to figure out which answers to revise.  

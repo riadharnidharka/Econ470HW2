@@ -10,8 +10,8 @@ pacman::p_load(tidyverse, ggplot2, dplyr, lubridate)
 
 
 # Read and combine data ---------------------------------------------------
-source('data-code/H1_HCRISv1996.R')
-source('data-code/H2_HCRISv2010.R')
+source('submission1/data-code/H1_HCRISv1996.R')
+source('submission1/data-code/H2_HCRISv2010.R')
 
 final.hcris.v1996=read_rds('data/output/HCRIS_Data_v1996.rds')
 final.hcris.v2010=read_rds('data/output/HCRIS_Data_v2010.rds')
@@ -56,11 +56,26 @@ unique.hcris1 =
   mutate(source='unique reports')
 
 
-## identify hospitals with multiple reports per fiscal year
+## identify hospitals with multiple reports per fiscal year (answer to q1?)
 duplicate.hcris = 
   final.hcris %>%
   filter(total_reports>1) %>%
   mutate(time_diff=fy_end-fy_start)
+
+## ria's edits: Aggregate data to count unique provider numbers per year
+unique_provider_counts <- duplicate.hcris %>%
+  group_by(fyear) %>%
+  summarise(UniqueProviders = n_distinct(provider_number))
+
+## ria's edits (stopped here): line graph of number of hospitals w more than one report over time
+dup.hospitals <- ggplot(unique_provider_counts, aes(x = fyear, y = UniqueProviders)) +
+  geom_line() +
+  labs(title = "Hospitals with Duplicate Reports Over Time",
+       x = "fiscal year",
+       y = "Number of Hospitals") +
+  theme_minimal()
+
+ggsave("dup.hospitals.png", plot = dup.hospitals)
 
 ## calculate elapsed time between fy start and fy end for hospitals with multiple reports
 duplicate.hcris = 
@@ -143,3 +158,4 @@ final.hcris.data =
   arrange(provider_number, year)
 
 write_rds(final.hcris.data,'data/output/HCRIS_Data.rds')
+save.image("submission1/Hwk2_workspace1.Rdata")

@@ -1,0 +1,192 @@
+#Question 1: code in HCRIS_Data.R code file (and analysisq1)
+#Question 2: How many unique ids after removing/combining reports
+final.hcris.data
+final.hcris.data=read_rds('data/output/HCRIS_Data.rds')
+
+## Calculate the number of unique hospital IDs
+library(dplyr)
+num_unique_hospital_ids <- final.hcris.data  %>%  ungroup() %>% distinct(provider_number) %>%
+  nrow()
+
+# Print the result
+print(num_unique_hospital_ids)
+### There are 6747 unique hospital ids in the dataset 
+
+final.hcris.data <- final.hcris.data %>% ungroup()
+
+#Question 3
+## Create the violin plot
+library(ggplot2)
+library(scales)
+# Define the custom upper limit for the y-axis
+custom_upper_limit <- 3000 
+# dividing by 1000000 to show the y axis in total charges scaled 
+tot.charges <- ggplot(final.hcris.data, aes(x = as.factor(year), y = tot_charges / 1e6)) +
+  geom_violin() +
+  labs(title = "Distribution of Total Charges by Year",
+       x = "Year",
+       y = "Total Charges in Millions of Dollars") +
+  theme_minimal() + 
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE), limits = c(0, custom_upper_limit))
+
+print(tot.charges)
+
+# Define the custom upper limit for the y-axis
+custom_upper_limit <- 3000
+
+# Filter out data for the year 2007
+filtered_data <- final.hcris.data %>%
+  filter(year != 2007)
+
+# Create the ggplot with the filtered data
+tot.charges <- ggplot(filtered_data, aes(x = as.factor(year), y = tot_charges / 1e6)) +
+  geom_violin() +
+  labs(title = "Distribution of Total Charges by Year",
+       x = "Year",
+       y = "Total Charges in Millions of Dollars") +
+  theme_minimal() + 
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE), limits = c(0, custom_upper_limit))
+
+print(tot.charges)
+
+
+#Question 4
+# Calculate estimated price using the provided formula
+final.hcris.data <- final.hcris.data %>%
+  mutate(
+    discount_factor = 1 - tot_discounts / tot_charges,
+    price_num = (ip_charges + icu_charges + ancillary_charges) * discount_factor - tot_mcare_payment,
+    price_denom = tot_discharges - mcare_discharges,
+    price = price_num / price_denom
+  )
+
+# Filter out negative prices and potential outliers
+final.hcris.data <- final.hcris.data %>% ungroup() %>%
+  filter(year != 2007, price_denom>100, !is.na(price_denom), 
+         price_num>0, !is.na(price_num),
+         price<100000, 
+         beds>30) %>%  
+  mutate( hvbp_payment = ifelse(is.na(hvbp_payment),0,hvbp_payment),
+          hrrp_payment = ifelse(is.na(hrrp_payment),0,abs(hrrp_payment)),
+          penalty = (hvbp_payment-hrrp_payment<0))
+
+# Create the violin plot
+estimated_prices <- ggplot(final.hcris.data, aes(x = as.factor(year), y = price)) +
+  geom_violin(trim = FALSE) +
+  labs(x = "Year", y = "Estimated Price") +
+  ggtitle("Distribution of Estimated Prices by Year") +
+  theme_minimal()
+
+estimated_prices
+
+#Question 5: Find penalized hospitals
+final.hcris.data=read_rds('data/output/HCRIS_Data.rds')
+
+final.hcris.data <- final.hcris.data %>%
+  mutate( discount_factor = 1-tot_discounts/tot_charges,
+          price_num = (ip_charges + icu_charges + ancillary_charges)*discount_factor - tot_mcare_payment,
+          price_denom = tot_discharges - mcare_discharges,
+          price = price_num/price_denom)
+
+final.hcris <- final.hcris.data %>% ungroup() %>%
+  filter(price_denom>100, !is.na(price_denom), 
+         price_num>0, !is.na(price_num),
+         price<100000, 
+         beds>30, year==2012) %>%  #<<
+  mutate( hvbp_payment = ifelse(is.na(hvbp_payment),0,hvbp_payment),
+          hrrp_payment = ifelse(is.na(hrrp_payment),0,abs(hrrp_payment)), #<<
+    penalty = (hvbp_payment-hrrp_payment<0)) #<<
+
+#Calculate mean prices for penalized and not penalized groups
+mean.pen <- round(mean(final.hcris$price[which(final.hcris$penalty == 1)]), 2)
+mean.nopen <- round(mean(final.hcris$price[which(final.hcris$penalty == 0)]), 2)
+
+# Print mean prices
+cat("Mean Price for Penalized Group: ", mean.pen, "\n")
+cat("Mean Price for Not Penalized Group: ", mean.nopen, "\n")
+
+#Avg price among non penalized hospitals is 9560.41, avg price among penalized hospitals is 9896.31
+
+# Question 6: Split hospitals into quartiles based on bed size
+final.hcris <- final.hcris %>%
+  mutate(quartile = ntile(beds, 4),
+         quartile_1 = as.numeric(quartile == 1),
+         quartile_2 = as.numeric(quartile == 2),
+         quartile_3 = as.numeric(quartile == 3),
+         quartile_4 = as.numeric(quartile == 4))
+
+# Question 6: Table of average price among treated/control groups for each quartile
+quartile_price_summary <- final.hcris %>%
+  group_by(quartile) %>%
+  summarise(avg_price_treated = mean(ifelse(penalty == 1, price, NA), na.rm = TRUE),
+            avg_price_control = mean(ifelse(penalty == 0, price, NA), na.rm = TRUE))
+
+print(quartile_price_summary)
+
+#Question 7:
+lp.vars <- final.hcris %>% 
+  dplyr::select(beds, quartile_1, quartile_2, penalty, quartile_3, 
+         quartile_4, price) %>%
+  dplyr::filter(complete.cases(.))
+lp.covs <- lp.vars %>% dplyr::select(-c("penalty","price"))
+
+
+v.name=data.frame(new=c("Beds","Quartile 1", "Penalty", "Quartile 2",
+                   "Quartile 3", "Quartile 4", "Price"))
+
+# Part 1: Nearest Neighbor Matching (Inverse Variance Distance)
+m.nn.var2 <- Matching::Match(Y=lp.vars$price,
+                             Tr=lp.vars$penalty,
+                             X=lp.covs,
+                             M=1,   #<<
+                             Weight=1,
+                             estimand="ATE")
+                             
+
+#Part 2: Nearest neighbor matching (1-to-1) with Mahalanobis distance
+m.nn.md <- Matching::Match(Y=lp.vars$price,
+                           Tr=lp.vars$penalty,
+                           X=lp.covs,
+                           M=1,
+                           Weight=2,
+                           estimand="ATE")                           
+
+
+#Part 3: Inverse propensity weighting
+logit.model <- glm(penalty ~ beds + quartile_1 + quartile_2 + quartile_3 + 
+         quartile_4 + price, family=binomial, data=lp.vars)
+ps <- fitted(logit.model)
+m.nn.ps <- Matching::Match(Y=lp.vars$price,
+                           Tr=lp.vars$penalty,
+                           X=ps,
+                           M=1,
+                           estimand="ATE")
+
+
+#Part 4: Simple linear regression 
+reg.dat <- lp.vars %>% ungroup() %>% filter(complete.cases(.)) %>%
+  mutate(beds_diff = penalty*(beds - mean(beds)))
+reg <- lm(price ~ penalty + beds + quartile_1 + quartile_2 + quartile_3 + quartile_4 + 
+            beds_diff,
+          data=reg.dat)
+summary(reg)
+
+library(cobalt)
+# Extract ATE estimates
+ATE_nn_var <- bal.tab(m.nn.var2, covs = lp.covs, treat = lp.vars$penalty)$ATE
+ATE_nn_md <- bal.tab(m.nn.md, covs = lp.covs, treat = lp.vars$penalty)$ATE
+ATE_nn_ps <- bal.tab(m.nn.ps, covs = lp.covs, treat = lp.vars$penalty)$ATE
+ATE_reg <- coef(summary(reg))["penaltyTRUE", "Estimate"]
+
+# Create a data frame for the results
+results_table <- data.frame(
+  Estimator = c("Nearest Neighbor (Inverse Variance Distance)", 
+                "Nearest Neighbor (Mahalanobis Distance)", 
+                "Inverse Propensity Weighting", 
+                "Simple Linear Regression"),
+  ATE = c(ATE_nn_var, ATE_nn_md, ATE_nn_ps, ATE_reg)
+)
+# Print the results table
+print(results_table)
+
+save.image("submission3/Hwk2_workspace2.Rdata")  
