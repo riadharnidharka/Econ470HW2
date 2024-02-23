@@ -19,7 +19,7 @@ final.hcris.data <- final.hcris.data %>% ungroup()
 library(ggplot2)
 library(scales)
 # Define the custom upper limit for the y-axis
-custom_upper_limit <- 3000 
+custom_upper_limit <- 300
 # dividing by 1000000 to show the y axis in total charges scaled 
 tot.charges <- ggplot(final.hcris.data, aes(x = as.factor(year), y = tot_charges / 1e6)) +
   geom_violin() +
@@ -32,11 +32,12 @@ tot.charges <- ggplot(final.hcris.data, aes(x = as.factor(year), y = tot_charges
 print(tot.charges)
 
 # Define the custom upper limit for the y-axis
-custom_upper_limit <- 3000
+custom_upper_limit <- 300
 
 # Filter out data for the year 2007
 filtered_data <- final.hcris.data %>%
-  filter(year != 2007)
+  filter(year != 2007 & year != 2016)
+
 
 # Create the ggplot with the filtered data
 tot.charges <- ggplot(filtered_data, aes(x = as.factor(year), y = tot_charges / 1e6)) +
@@ -62,7 +63,7 @@ final.hcris.data <- final.hcris.data %>%
 
 # Filter out negative prices and potential outliers
 final.hcris.data <- final.hcris.data %>% ungroup() %>%
-  filter(year != 2007, price_denom>100, !is.na(price_denom), 
+  filter(year != 2007 & year != 2016, price_denom>100, !is.na(price_denom), 
          price_num>0, !is.na(price_num),
          price<100000, 
          beds>30) %>%  
